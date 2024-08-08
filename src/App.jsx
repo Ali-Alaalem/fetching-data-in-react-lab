@@ -1,35 +1,44 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import * as starshipService from "./services/starshipService";
+import StarshipList from "./components/StarshipList";
+import StarshipSearch from "./components/StarshipSearch";
+import { useState, useEffect } from "react";
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+  const [starships, setStarships] = useState([]);
+  const [filteredStarships, setFilteredStarships] = useState([]);
+
+  const getStarship = async () => {
+    const data = await starshipService.show();
+    setFilteredStarships(data.results);
+    setStarships(data.results);
+  };
+
+  useEffect(() => {
+    const fetchDefaultData = async () => {
+      await getStarship("starships");
+    };
+
+    fetchDefaultData();
+  }, []);
+
+  const searchStarships = (str) => {
+    const lowerCaseStr = str.toLowerCase();
+    setStarships(
+      str.length > 0
+        ? filteredStarships.filter((starship) =>
+            starship.name.toLowerCase().includes(lowerCaseStr)
+          )
+        : filteredStarships
+    );
+  };
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <StarshipSearch getStarship={searchStarships} />
+      <h3>Number of results : {starships.length}</h3>
+      <StarshipList starships={starships} />
     </>
-  )
-}
+  );
+};
 
-export default App
+export default App;
